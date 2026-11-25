@@ -1,0 +1,47 @@
+name: Release
+
+# Publishing happens here and nowhere else: a tag v1.2.3 builds, tests and pushes
+# SnappedCut 1.2.3 to NuGet. The key lives in the `release` environment.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet test -c Release
+      # The tag is the source of truth: v1.2.3 must be version 1.2.3, or the
+      # package on NuGet and the tag in git disagree forever.
+      - name: The tag must match the version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(grep -m1 -o '<Version>[^<]*</Version>' src/SnappedCut/SnappedCut.csproj | sed 's/<[^>]*>//g')"
+          [ "$tag" = "$pkg" ] || { echo "tag $tag != csproj $pkg"; exit 1; }
+      - run: dotnet pack src/SnappedCut/SnappedCut.csproj -c Release -o dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet nuget push "dist/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The library and tests target net8.0; each SDK here builds them, and the
+        # 8.0 runtime is always installed so the tests have something to run on.
+        sdk: ['8.0.x', '9.0.x', '10.0.x']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            ${{ matrix.sdk }}
+      # Pin the matrix SDK, or the newest one installed builds every leg.
+      - run: dotnet new globaljson --force --sdk-version "$(dotnet --list-sdks | grep -m1 "^${SDK%.x}" | cut -d' ' -f1)"
+        env:
+          SDK: ${{ matrix.sdk }}
+      - run: dotnet --version
+      - run: dotnet test -c Release

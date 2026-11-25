@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>SnappedCut</PackageId>
+    <Version>0.2.0</Version>
+    <Authors>Snapped Cut</Authors>
+    <Description>Client for the Snapped Cut video API.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/snappedcut-dev/sdk-dotnet</RepositoryUrl>
+    <PackageProjectUrl>https://snappedcut.com</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>
